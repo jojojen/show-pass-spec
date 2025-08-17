@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCR 測試頁面</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+  img { max-width: 100%; margin-top: 10px; border: 1px solid #ccc; }
+  #raw { white-space: pre-wrap; background: #f9f9f9; padding: 10px; border: 1px solid #ccc; margin-top: 10px; }
+  #fields { background: #eef; padding: 10px; border: 1px solid #99f; margin-top: 10px; }
+  button { margin-top: 10px; padding: 8px 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h2>OCR 測試</h2>
+
+<input type="file" id="fileInput" accept="image/*">
+<img id="preview" src="" alt="圖片預覽" style="display:none;">
+
+<button id="uploadBtn">上傳並辨識</button>
+
+<h3>辨識結果 Raw Text</h3>
+<div id="raw">尚未辨識</div>
+
+<h3>解析後欄位</h3>
+<div id="fields">尚未解析</div>
+
+<script>
+document.getElementById('fileInput').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        document.getElementById('preview').src = event.target.result;
+        document.getElementById('preview').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('uploadBtn').addEventListener('click', async function () {
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files[0]) {
+        alert('請先選擇圖片');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', fileInput.files[0]);
+
+    document.getElementById('raw').innerText = '辨識中...';
+    document.getElementById('fields').innerText = '辨識中...';
+
+    try {
+        const res = await fetch('/api/ocr', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.ok) {
+            document.getElementById('raw').innerText = data.raw_text;
+            const f = data.fields;
+            document.getElementById('fields').innerText =
+                `演出名稱: ${f.title || '未擷取'}\n` +
+                `演出地點: ${f.venue || '未擷取'}\n` +
+                `日期: ${f.event_date || '未擷取'}\n`;
+        } else {
+            document.getElementById('raw').innerText = '錯誤: ' + data.error;
+            document.getElementById('fields').innerText = '無結果';
+        }
+    } catch (err) {
+        document.getElementById('raw').innerText = '請求失敗: ' + err;
+        document.getElementById('fields').innerText = '無結果';
+    }
+});
+</script>
+
+</body>
+</html>

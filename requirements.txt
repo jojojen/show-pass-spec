@@ -1,0 +1,6 @@
+Flask==3.0.3
+flask-cors==4.0.1
+google-cloud-vision==3.7.4
+protobuf==5.27.3
+Pillow==10.4.0
+python-dotenv==1.0.1

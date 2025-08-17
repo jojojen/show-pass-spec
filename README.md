@@ -27,3 +27,22 @@
 ## 整體流程
 
 流程由客戶端發起：瀏覽器處理本地遮蔽和 UI，呼叫後端 API 進行 OCR 和數據持久化，所有部署均在單一 Railway 容器中管理，以簡化操作。伺服器上不進行持久影像儲存，以確保隱私。
+
+ 
+ ## venv setting
+pyenv local 3.11.9
+pyenv rehash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+### exec method 1
+python app.py
+### exec method 2
+gunicorn app:app --bind 0.0.0.0:5000 --workers 2
+### exec method 3
+export FLASK_APP=app.py
+flask run
+
+### check at
+http://127.0.0.1:5000/
